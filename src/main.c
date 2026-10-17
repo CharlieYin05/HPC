@@ -61,7 +61,7 @@ static int hash_file(const char *path, uint64_t *hash)
 
 int main(int argc, char *argv[])
 {
-    // Check if the correct number of command-line arguments is provided.
+    // 检查必须要输入三个参数：程序名、文件A路径、文件B路径。如果不满足条件，print error并退出。
     if (argc != 3) {
         fprintf(stderr,
                 "Usage: %s file_a.pdf file_b.pdf\n",
@@ -69,14 +69,15 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    // Declare variables to hold the hash values for both files.
+    // 声明两个变量来存储两个文件的哈希值。
     uint64_t hash_a, hash_b;
 
-    // Calculate the hashes for both files. If either fails, exit with an error.
+    // 调用上面的 hash_file 函数计算两个文件的哈希值，如果任意一个文件的哈希计算失败，程序将返回错误码 1。
     if (!hash_file(argv[1], &hash_a) || !hash_file(argv[2], &hash_b)) {
         return 1;
     }
 
+    // 打印两个文件的哈希值，并比较它们是否相同。
     printf("Hash A: %012" PRIx64 "\n", hash_a);
     printf("Hash B: %012" PRIx64 "\n", hash_b);
 

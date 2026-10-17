@@ -1,0 +1,94 @@
+编译四个C文件
+
+Serial：
+
+gcc -std=c11 -O2 -Wall -Wextra \
+src/birthday_serial.c src/toy_hash.c \
+-o birthday_serial
+
+---
+
+OpenMP：
+
+gcc -std=c11 -O2 -Wall -Wextra -fopenmp \
+src/birthday_omp.c src/toy_hash.c \
+-o birthday_omp
+
+---
+
+Pure MPI：
+
+mpicc -std=c11 -O2 -Wall -Wextra \
+src/birthday_mpi.c src/toy_hash.c \
+-o birthday_mpi
+
+---
+
+Hybrid MPI + OpenMP：
+
+mpicc -std=c11 -O2 -Wall -Wextra -fopenmp \
+src/birthday_hybrid.c src/toy_hash.c \
+-o birthday_hybrid
+
+---
+
+检查编译结果：
+
+ls -lh birthday_serial birthday_omp birthday_mpi birthday_hybrid
+
+---
+
+Slurm 测试脚本：
+
+mkdir -p logs output/assignment2
+
+cat > test_hybrid.slurm <<'EOF'
+#!/bin/bash
+#SBATCH --job-name=a2_hybrid_test
+#SBATCH --partition=cits3402
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=4
+#SBATCH --cpus-per-task=2
+#SBATCH --time=00:05:00
+#SBATCH --output=logs/test_hybrid_%j.out
+#SBATCH --error=logs/test_hybrid_%j.err
+
+set -e
+
+module load gcc/14.3.0
+module load openmpi/5.0.5
+
+cd ~/Assignment2_HPC
+
+export OMP_NUM_THREADS=2
+export OMP_PROC_BIND=close
+export OMP_PLACES=cores
+
+echo "Hostname: $(hostname)"
+echo "MPI ranks: ${SLURM_NTASKS}"
+echo "Threads per rank: ${OMP_NUM_THREADS}"
+
+srun --mpi=pmix ./birthday_hybrid \
+    data/assignment2/2_beta_a.pdf \
+    data/assignment2/2_beta_b.pdf \
+    23497868 50000000 \
+    --threads 2 \
+    --batch 16384 \
+    --benchmark 2000000
+EOF
+
+--- 
+
+提交任务：
+
+sbatch test_hybrid.slurm
+
+查看列队：
+
+squeue -u cits026
+
+查看结果：
+
+sacct -j 158468 --format=JobID,State,ExitCode,Elapsed
+
+---

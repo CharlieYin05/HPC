@@ -12,5 +12,5 @@ uint64_t toy_hash(const unsigned char *p, size_t n)
     h ^= h >> 33;
     h *= 0xc4ceb9fe1a85ec53ULL;
     h ^= h >> 33;
-    return h & 0x0000ffffffffffffULL;
+    return h & 0x0000ffffffffffffULL; 
 }

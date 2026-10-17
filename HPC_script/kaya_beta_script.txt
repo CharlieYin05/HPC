@@ -1,0 +1,48 @@
+#!/bin/bash
+#SBATCH --job-name=a2_beta
+#SBATCH --partition=cits3402
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=8
+#SBATCH --cpus-per-task=8
+#SBATCH --time=00:15:00
+#SBATCH --output=logs/solve_beta_%j.out
+#SBATCH --error=logs/solve_beta_%j.err
+
+set -euo pipefail
+
+module load gcc/14.3.0
+module load openmpi/5.0.5
+
+cd ~/Assignment2_HPC
+
+mkdir -p output/assignment2
+
+export OMP_NUM_THREADS=8
+export OMP_PROC_BIND=close
+export OMP_PLACES=cores
+
+echo "Node: $(hostname)"
+echo "MPI ranks: ${SLURM_NTASKS}"
+echo "Threads per rank: ${OMP_NUM_THREADS}"
+echo "Start: $(date)"
+
+# 防止误用以前运行留下的输出
+rm -f output/hybrid_a.pdf output/hybrid_b.pdf
+
+mpirun -np "${SLURM_NTASKS}" ./birthday_hybrid \
+    data/assignment2/2_beta_a.pdf \
+    data/assignment2/2_beta_b.pdf \
+    23497868 50000000 \
+    --threads 8 \
+    --batch 16384 \
+    --collisions 1
+
+# 只有成功产生两个文件，才保存正式结果
+test -s output/hybrid_a.pdf
+test -s output/hybrid_b.pdf
+
+cp output/hybrid_a.pdf output/assignment2/2_beta_a_solved.pdf
+cp output/hybrid_b.pdf output/assignment2/2_beta_b_solved.pdf
+
+echo "Beta solved PDFs saved."
+echo "End: $(date)"
