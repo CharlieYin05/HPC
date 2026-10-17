@@ -1,0 +1,15 @@
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Unix executable files (your compiled programs)
+/birthday_serial
+/birthday_mpi
+/birthday_omp
+/birthday_hybrid
+/hash_test
+/mpi_exchange_demo
+/mpi_hello
+
+# VS Code settings
+.vscode/
